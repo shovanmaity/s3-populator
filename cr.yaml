@@ -1,0 +1,12 @@
+apiVersion: example.io/v1
+kind: S3Populator
+metadata:
+  name: s3-populator-1
+  namespace: default
+spec:
+  url: http://192.168.0.190:9000
+  id: minioadmin
+  secret: minioadmin
+  region: us-east-1
+  bucket: b-001
+  key: /

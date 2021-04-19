@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: s3populator
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: s3populator-account
+  namespace: s3populator
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: s3populator-role
+rules:
+  - apiGroups: [""]
+    resources: [persistentvolumes]
+    verbs: [get, list, watch, patch]
+  - apiGroups: [""]
+    resources: [persistentvolumeclaims]
+    verbs: [get, list, watch, patch, create, delete]
+  - apiGroups: [""]
+    resources: [pods]
+    verbs: [get, list, watch, create, delete]
+  - apiGroups: [storage.k8s.io]
+    resources: [storageclasses]
+    verbs: [get, list, watch]
+
+  - apiGroups: [example.io]
+    resources: [s3populators]
+    verbs: [get, list, watch]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: s3populator-binding
+subjects:
+  - kind: ServiceAccount
+    name: s3populator-account
+    namespace: s3populator
+roleRef:
+  kind: ClusterRole
+  name: s3populator-role
+  apiGroup: rbac.authorization.k8s.io
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: s3populator
+  namespace: s3populator
+spec:
+  selector:
+    matchLabels:
+      app: s3populator
+  template:
+    metadata:
+      labels:
+        app: s3populator
+    spec:
+      serviceAccount: s3populator-account
+      containers:
+        - name: s3populator
+          image: quay.io/shovanmaity/s3-populator:latest
+          imagePullPolicy: Always
+          args:
+          - --image-name=quay.io/shovanmaity/s3-connect:latest
+---
+kind: VolumePopulator
+apiVersion: populator.storage.k8s.io/v1alpha1
+metadata:
+  name: s3-populator
+sourceKind:
+  group: example.io
+  kind: S3Populator
