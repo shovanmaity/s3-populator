@@ -2,15 +2,16 @@ package main
 
 import (
 	"flag"
+	"os"
 
 	populator_machinery "github.com/kubernetes-csi/lib-volume-populator/populator-machinery"
+	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 const (
-	namespace  = "s3populator"
 	prefix     = "example.io"
 	mountPath  = "/mnt"
 	devicePath = "/dev/block"
@@ -18,16 +19,12 @@ const (
 
 func main() {
 	var (
-		masterURL  string
-		kubeconfig string
-		imageName  string
+		imageName string
 	)
-	// Controller args
-	flag.StringVar(&kubeconfig, "kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
-	flag.StringVar(&masterURL, "master", "", "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
 	flag.StringVar(&imageName, "image-name", "", "Image to use for populating")
 	flag.Parse()
 
+	namespace := os.Getenv("POD_NAMESPACE")
 	const (
 		groupName  = "example.io"
 		apiVersion = "v1"
@@ -38,13 +35,17 @@ func main() {
 		gk  = schema.GroupKind{Group: groupName, Kind: kind}
 		gvr = schema.GroupVersionResource{Group: groupName, Version: apiVersion, Resource: resource}
 	)
-	populator_machinery.RunController(masterURL, kubeconfig, imageName,
+	populator_machinery.RunController("", "", imageName,
 		namespace, prefix, gk, gvr, mountPath, devicePath, getPopulatorPodArgs)
 }
 
 func getPopulatorPodArgs(rawBlock bool, u *unstructured.Unstructured) ([]string, error) {
-	var s3populator S3Populator
-	err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.UnstructuredContent(), &s3populator)
+	if rawBlock {
+		return nil, errors.New("Block volume is not imaplementated in populator")
+	}
+	s3populator := S3Populator{}
+	err := runtime.DefaultUnstructuredConverter.
+		FromUnstructured(u.UnstructuredContent(), &s3populator)
 	if nil != err {
 		return nil, err
 	}

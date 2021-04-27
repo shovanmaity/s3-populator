@@ -65,11 +65,9 @@ spec:
           imagePullPolicy: Always
           args:
           - --image-name=quay.io/shovanmaity/s3-connect:latest
----
-kind: VolumePopulator
-apiVersion: populator.storage.k8s.io/v1alpha1
-metadata:
-  name: s3-populator
-sourceKind:
-  group: example.io
-  kind: S3Populator
+          env:
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+

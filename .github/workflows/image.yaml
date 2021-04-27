@@ -1,0 +1,27 @@
+name: image
+on:
+  push:
+    branches:
+    - '*'
+    tags:
+    - '*'
+jobs:
+  build:
+    name: Build and push docker images
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Check out mayadata-io/agent-gateway repo
+        uses: actions/checkout@v2
+
+      - name: Login to Quay.io
+        uses: docker/login-action@v1 
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_ROBOT_TOKEN }}
+
+      - name: Build image
+        run: make image
+
+      - name: Push image
+        run: make push
