@@ -64,7 +64,7 @@ spec:
           image: quay.io/shovanmaity/s3-populator:latest
           imagePullPolicy: Always
           args:
-          - --image-name=quay.io/shovanmaity/s3-connect:latest
+          - --image-name=quay.io/shovanmaity/s3-sync:latest
           env:
           - name: POD_NAMESPACE
             valueFrom:

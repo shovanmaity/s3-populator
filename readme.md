@@ -18,8 +18,8 @@ metadata:
   namespace: default
 spec:
   url: http://192.168.0.190:9000 # <- S3 server url
-  id: minioadmin # <- access id for the bucket
-  secret: minioadmin # <- secret key for the bucket
+  id: minioadmin # <- id to access the bucket
+  secret: minioadmin # <- secret/key to access the bucket
   region: us-east-1 # <- region for the bucket
   bucket: b-001 # <- bucket name
   key: / # <- path that we want to download from a bucket.
